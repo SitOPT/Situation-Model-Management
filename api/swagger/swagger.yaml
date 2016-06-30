@@ -1,0 +1,1037 @@
+
+swagger: "2.0"
+info:
+  version: "1.0.2"
+  title: SitOPT API Reference
+# during dev, should point to your local machine
+host: localhost:10010
+# basePath prefixes all resource paths 
+basePath: /
+# 
+schemes:
+  # tip: remove http to make production-grade
+  - http
+  - https
+# format of bodies a client can send (Content-Type)
+consumes:
+  - application/json
+  - text/html
+
+# format of the responses to the client (Accepts)
+produces:
+  - application/json
+  - text/html
+
+paths:
+
+  /situations/occured/{thing}/{situation}:
+    x-swagger-router-controller: situations
+    put:
+      tags:
+        - situation
+      summary: Change "occured"-attribute
+      description: Change the "occured"-attribute of either specified or all situations. For testing purpose only!
+      operationId: situationOccured
+      
+      parameters:
+        - in: path
+          name: situation
+          description: Name of situation.
+          required: true
+          type: string
+        - in: path
+          name: thing
+          description: Name of the thing.
+          required: true
+          type: string
+       
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/GetModel"
+        # responses may fall through to errors
+        "404":
+          description: Not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  
+  
+
+  /situations/{thing}/{situation}:
+    x-swagger-router-controller: situations
+    get:
+      tags:
+        - situation
+      summary: Get situation
+      description: Get specified situations
+      operationId: situationByThingAndTemplate
+      
+      parameters:
+        - name: situation
+          in: path
+          description: name of situationtemplate
+          required: true
+          type: string
+        - name: thing
+          in: path
+          description: name of the thing
+          required: true
+          type: string
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/GetModel"
+        # responses may fall through to errors
+        "404":
+          description: Not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+            
+    delete:
+      tags:
+        - situation
+      summary: Delete situation
+      description: Deletes specified situation 
+      operationId: deleteSituation
+      
+      parameters:
+        - name: situation
+          in: path
+          description: name of the situation template
+          required: true
+          type: string
+        - name: thing
+          in: path
+          description: name of the thing
+          required: true
+          type: string
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/GetModel"
+        # responses may fall through to errors
+        "404":
+          description: Not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+            
+      
+  /situations/changes:
+    x-swagger-router-controller: situations
+    
+    
+    get:
+      tags:
+        - situation
+      summary: Get registrations
+      description: Specify CallbackURL to get only those registrations with the specified CallbackURL. If emtpy, returns all registrations.
+      operationId: allRegistrations
+      
+      parameters:
+        - name: CallbackURL
+          in: query
+          description: URL the changes are sent to.
+          required: false
+          type: string
+          
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/RegistrationModel"
+        # responses may fall through to errors
+        "404":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+
+    
+    
+    
+    post:
+      tags:
+        - situation
+      summary: Registrate for changes
+      description: Get a notification when the situation - specified by corresponding thing & situationtemplate - changes via a callback to a specified URL. The parameter "continuous" controls whether the callback only happens once when the situation changes or continues forever. Either enter both IDs or none. 
+      operationId: situationChange
+      
+      parameters:
+        - name: SitTempName
+          in: query
+          description: name of situation template. If empty, any situation change will be sent to the callback URL
+          required: false
+          type: string
+          
+        - name: ThingName
+          in: query
+          description: name of thing. If empty, any situation change will be sent to the callback URL
+          required: false
+          type: string
+          
+        - name: CallbackURL
+          in: query
+          description: URL the callback is sent to
+          required: true
+          type: string
+          
+        - name: once
+          in: query
+          description: whether the callback continues or only once
+          required: true
+          type: boolean
+          default: false
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Response"
+        # responses may fall through to errors
+        "404":
+          description: Not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "400":
+          description: Bad Content
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    
+    
+    delete:        
+      tags:
+        - situation
+      summary: Deletes registration
+      description: Deletes the registration for either specified or all situation changes.
+      
+      operationId: situationChangeDelete
+      
+      parameters:
+        - name: ID
+          in: query
+          description: ID of situation. If empty, callbacks to the specified URL will be stopped.
+          required: false
+          type: string
+          
+        - name: CallbackURL
+          in: query
+          description: URL to which the callback shall be stopped
+          required: true
+          type: string
+
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Response"
+        # responses may fall through to errors
+        "404":
+          description: Not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    
+      
+      
+      
+  /situations:
+  # binds a127 app logic to a route
+    x-swagger-router-controller: situations
+    get:
+      tags:
+        - situation
+      summary: Get all situations
+      description: Get all situations
+      operationId: allSituations
+      
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/SituationModel"
+        # responses may fall through to errors
+        "404":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+            
+      
+    post:
+      tags:
+        - situation
+      summary: Store situation
+      description: Stores situation in database. ID of thing, situation template and sensors referenced in the situation must be in the database.
+      operationId: saveSituation
+      # used as the method name of the controller
+      parameters:
+        - in: body
+          name: body
+          description: input
+          required: false
+          schema:
+            $ref: "#/definitions/SituationModel"
+            
+     
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Response"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+            
+  /things/{name}:
+    x-swagger-router-controller: things
+    get:
+      tags:
+        - thing
+      summary: Get thing by name
+      description: Returns array of things with specified name. Names are unique.
+      operationId: getThingByName
+      
+      parameters:
+        - name: name
+          in: path
+          description: name of thing
+          required: true
+          type: string
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/GetModel"
+        # responses may fall through to errors
+        "404":
+          description: Not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+    delete:
+      tags:
+        - thing
+      summary: delete thing by name
+      description: deletes a thing.
+      operationId: deleteThing
+      parameters:
+        - name: name
+          in: path
+          description: name of the thing
+          required: true
+          type: string
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/Response"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  
+  /things:
+  # binds a127 app logic to a route
+    x-swagger-router-controller: things
+    
+    get:
+      tags:
+        - thing
+      summary: Get all things
+      description: Get all things
+      operationId: allThings
+      
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/ThingModel"
+        # responses may fall through to errors
+        "404":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+            
+            
+    post:
+      tags:
+        - thing
+      summary: Save thing
+      description: Save things in the database. Field "location" uses GeoJSON. Only use value of GeoJSON field "geometry"
+      operationId: saveThing
+      # used as the method name of the controller
+      parameters:
+        - in: body
+          name: body
+          description: input
+          required: false
+          schema:
+            $ref: "#/definitions/ThingModel"
+            
+     
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Response"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+            
+  /things/{name}/{attribute}/{value}:
+   # binds a127 app logic to a route
+    x-swagger-router-controller: things
+    
+    post:
+      tags:
+        - thing
+      summary: Update attribute
+      description: Update or create attribute of Thing
+      operationId: updateAttribute
+      # used as the method name of the controller
+      parameters:
+        - name: "name"
+          in: "path"
+          description: "name of Thing"
+          required: true
+          type: "string"
+        - name: "attribute"
+          in: "path"
+          description: "Name of attribute"
+          required: true
+          type: "string"
+        - name: "value"
+          in: "path"
+          description: "Value of attribute"
+          required: true
+          type: "string"
+     
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Response"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+            
+  /actuators:
+  # binds a127 app logic to a route
+    x-swagger-router-controller: actuators
+    
+    get:
+      tags:
+        - actuator
+      summary: Get all actuators
+      description: Get all actuators
+      operationId: allActuators
+      
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/ActuatorModel"
+        # responses may fall through to errors
+        "404":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+            
+            
+    post:
+      tags:
+        - actuator
+      summary: Save actuator
+      description: Save actuator in the database
+      operationId: saveActuator
+      # used as the method name of the controller
+      parameters:
+        - in: body
+          name: body
+          description: input
+          required: false
+          schema:
+            $ref: "#/definitions/ActuatorModel"
+            
+     
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Response"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+    delete:
+      tags:
+        - actuator
+      summary: Delete actuator
+      description: Delete actuator from the database
+      operationId: deleteActuator
+      parameters:
+        - in: body
+          name: name
+          description: Name of the actuator
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/Response"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    
+    
+  /owners:
+  # binds a127 app logic to a route
+    x-swagger-router-controller: owners
+    
+    get:
+      tags:
+        - owner
+      summary: Get all Owner
+      description: Get all Owners
+      operationId: allOwners
+      
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/GetModel"
+        # responses may fall through to errors
+        "404":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+            
+            
+    post:
+      tags:
+        - owner
+      summary: Save Owner
+      description: Save Owner in the database
+      operationId: saveOwner
+      # used as the method name of the controller
+      parameters:
+        - in: body
+          name: body
+          description: input
+          required: false
+          schema:
+            $ref: "#/definitions/OwnerModel"
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Response"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+    delete:
+      tags:
+        - owner
+      summary: Delete Owner
+      description: Delete Owner from the database
+      operationId: deleteOwner
+      parameters:
+        - in: body
+          name: name
+          description: name of the owner
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/Response"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    
+  
+  /situationtemplates/{name}:
+    x-swagger-router-controller: situationtemplate
+    get:
+      tags:
+        - situation template
+      summary: Get situation template by name
+      description: Returns array of situation templates with specified name. Multiple situation templates may have the same name.
+      operationId: getTemplateByName
+
+      parameters:
+        - name: name
+          in: path
+          description: name of situation template
+          required: true
+          type: string
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/SituationtemplateModel"
+        # responses may fall through to errors
+        "404":
+          description: Not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+    delete:
+      tags:
+        - situation template
+      summary: Delete situation template by ID
+      description: Deletes specified situation template
+      operationId: deleteTemplate
+
+      parameters:
+        - name: name
+          in: path
+          description: name of situation template
+          required: true
+          type: string
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/GetModel"
+        # responses may fall through to errors
+        "404":
+          description: Not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /situationtemplateFiles/{name}:
+    x-swagger-router-controller: situationtemplate
+    get:
+      tags:
+        - situation template
+      summary: Returns situationtemplate 
+      description: Returns the attached situation template - data of .xml-file. Returns the first attached document of the situation template (=> only 1 XML file / situation template allowed!)
+      operationId: getAttachment
+      # used as the method name of the controller
+
+      parameters:
+      - name: "name"
+        in: "path"
+        description: "ID of situation template"
+        required: true
+        type: "string"
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Response"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /situationtemplates/{name}/xml:
+    x-swagger-router-controller: situationtemplate
+    post:
+      tags:
+        - situation template
+      summary: Stores situationtemplates
+      description: Upload the .xml-file to the corresponding situation template
+      operationId: uploadAttachment
+      # used as the method name of the controller
+      consumes:
+      - "multipart/form-data"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        description: "name of situation template"
+        required: true
+        type: "string"
+      - in: "formData"
+        #description: "Additional data to pass to server"
+        #required: false
+        #type: "string"
+        name: "file"
+        #in: "formData"
+        description: "file to upload"
+        required: true
+        type: "file"
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Response"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /situationtemplates:
+  # binds a127 app logic to a route
+    x-swagger-router-controller: situationtemplate
+    
+    get:
+      tags:
+        - situation template
+      summary: Get all situation templates
+      description: Returns an array of all situation templates
+      operationId: allTemplates
+      
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/GetModel"
+        # responses may fall through to errors
+        "404":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    
+    post:
+      tags:
+        - situation template
+      summary: Stores situationtemplates
+      description: Situation templates define situations and the prerequisites for its occurence. One situation template defines one situation
+      operationId: saveTemplate
+      # used as the method name of the controller
+      parameters:
+        - in: body
+          name: body
+          description: input
+          required: true
+          schema:
+            $ref: "#/definitions/SituationtemplateModel"
+          
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Response"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /sensors/{name}:
+    x-swagger-router-controller: sensors
+    get:
+      tags:
+        - sensor
+      summary: Get sensors by name
+      description: Returns array of sensors with specified name. Multiple sensors may have the same name.
+      operationId: getSensorByName
+      
+      parameters:
+        - name: name
+          in: path
+          description: name of sensor
+          required: true
+          type: string
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/SensorModel"
+        # responses may fall through to errors
+        "404":
+          description: Not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+    delete:
+      tags:
+        - sensor
+      summary: Delete sensor by ID
+      description: Deletes specified sensor
+      operationId: deleteSensor
+      
+      parameters:
+        - name: name
+          in: path
+          description: ID of sensor
+          required: true
+          type: string
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/GetModel"
+        # responses may fall through to errors
+        "404":
+          description: Not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /sensors:
+  # binds a127 app logic to a route
+    x-swagger-router-controller: sensors
+    get:
+      tags:
+        - sensor
+      summary: Get all sensors
+      description: Returns an array of all sensors
+      operationId: allSensors
+      
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/GetModel"
+        # responses may fall through to errors
+        "404":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+    post:
+      tags:
+        - sensor
+      summary: Stores sensors
+      description: Sensors produce sensor values. They each have a sensor quality. ID optional.
+      operationId: saveSensor
+      # used as the method name of the controller
+      parameters:
+        - in: body
+          name: body
+          description: input
+          required: false
+          schema:
+            $ref: "#/definitions/SensorModel"
+          
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Response"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+# complex objects have schema definitions
+definitions:
+  SituationModel:
+    required:
+      - thing
+      - situationtemplate
+      - occured
+      - sensorvalues
+    properties:
+      thing:
+        type: string
+      timestamp:
+        type: string
+      situationtemplate:
+        type: string
+      occured:
+        type: boolean
+      sensorvalues:
+        type: array
+        items:
+          $ref: "#/definitions/SensorvalueModel"
+
+  GetModel:
+    required:
+      - name
+    properties:
+      name:
+        type: string
+
+  ThingModel:
+    required:
+      - name
+      - sensors
+      - owners
+    properties:
+      state:
+        type: array
+        items:
+          type: string
+      name:
+        type: string
+      url:
+        type: string
+      description:
+        type: string
+      sensors:
+        type: array
+        items:
+          type: string
+      location:
+        type: string
+      owners:
+        type: array
+        items:
+          type: string
+
+  SensorModel:
+    required:
+      - name
+    properties:
+      name:
+        type: string
+      SensorType:
+        type: string
+      url:
+        type: string
+      quality:
+        type: number
+        format: integer
+      description:
+        type: string
+      location:
+        type: string
+
+  SituationtemplateModel:
+    required:
+      - name
+      - xml
+    properties:
+      name:
+        type: string
+      situation:
+        type: string
+      xml:
+        type: string
+      description:
+        type: string
+        
+  OwnerModel:
+    required:
+      - name
+    properties:
+      name:
+        type: string
+      state: 
+        type: string
+      location:
+        type: string
+        
+  ActuatorModel:
+    required:
+      - actions
+      - things
+      - name
+    properties:
+      actions:
+        type: array
+        items:
+          type: string
+      things:
+        type: array
+        items:
+          type: string
+      name:
+        type: string
+      location:
+        type: string
+
+  SensorvalueModel:
+    required:
+      - sensor
+      - value
+    properties:
+      sensor:
+        type: string 
+      value:
+        type: number
+        format: float
+      timestamp:
+        type: string
+      quality:
+        type: number
+        format: float
+
+  RegistrationModel:
+    required:
+      - ThingID
+      - TemplateID
+      - callbackURL
+      - once
+    properties:
+      ThingID:
+        type: string
+      TemplateID:
+        type: string
+      callbackURL:
+        type: string
+      once:
+        type: boolean
+
+  Response:
+    required:
+      - message
+    properties:
+      message:
+        type: string
+
+  ErrorResponse:
+    required:
+      - message
+    properties:
+      message:
+        type: string
