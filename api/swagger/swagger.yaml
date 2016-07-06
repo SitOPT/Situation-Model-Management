@@ -769,7 +769,7 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
 
-  /sensors/{name}:
+  /sensors/{thing}/{name}:
     x-swagger-router-controller: sensors
     get:
       tags:
@@ -779,6 +779,11 @@ paths:
       operationId: getSensorByName
       
       parameters:
+        - name: thing
+          in: path
+          description: name of the thing
+          required: true
+          type: string
         - name: name
           in: path
           description: name of sensor
@@ -803,8 +808,13 @@ paths:
       summary: Delete sensor by ID
       description: Deletes specified sensor
       operationId: deleteSensor
-      
+
       parameters:
+        - name: thing
+          in: path
+          description: name of the thing
+          required: true
+          type: string
         - name: name
           in: path
           description: ID of sensor
@@ -885,6 +895,7 @@ definitions:
         type: string
       timestamp:
         type: string
+        default: ""
       situationtemplate:
         type: string
       occured:
@@ -909,20 +920,24 @@ definitions:
     properties:
       state:
         type: array
+        default: []
         items:
           type: string
       name:
         type: string
       url:
         type: string
+        default: ""
       description:
         type: string
+        default: ""
       sensors:
         type: array
         items:
           type: string
       location:
         type: string
+        default: ""
       owners:
         type: array
         items:
@@ -931,19 +946,27 @@ definitions:
   SensorModel:
     required:
       - name
+      - thing
     properties:
       name:
         type: string
       SensorType:
         type: string
+        default: ""
       url:
         type: string
+        default: ""
       quality:
         type: number
         format: integer
+        default: 0
       description:
         type: string
+        default: ""
       location:
+        type: string
+        default: ""
+      thing:
         type: string
 
   SituationtemplateModel:
@@ -955,10 +978,12 @@ definitions:
         type: string
       situation:
         type: string
+        default: ""
       xml:
         type: string
       description:
         type: string
+        default: ""
         
   OwnerModel:
     required:
@@ -968,8 +993,10 @@ definitions:
         type: string
       state: 
         type: string
+        default: ""
       location:
         type: string
+        default: ""
         
   ActuatorModel:
     required:
@@ -989,6 +1016,7 @@ definitions:
         type: string
       location:
         type: string
+        default: ""
 
   SensorvalueModel:
     required:
@@ -1002,9 +1030,11 @@ definitions:
         format: float
       timestamp:
         type: string
+        default: ""
       quality:
         type: number
         format: float
+        default: 0
 
   RegistrationModel:
     required:
