@@ -25,8 +25,30 @@ module.exports = {
 	situationChangeDelete: situationChangeDelete,
 	situationOccured: situationOccured,
 	deleteSituation: deleteSituation,
-	allRegistrations: allRegistrations
+	allRegistrations: allRegistrations,
+	situationsByThing: situationsByThing
 };
+
+function situationsByThing(req, res) {
+	var thing = req.swagger.params.thing.value;
+	var cursor = db.collection('Situations').find( { "thing": thing  } );
+	cursor.toArray(function (e, situations) {
+		if (e) {
+			console.log(e);
+		}
+		if (situations.length == 0) {
+			res.statusCode = 404;
+			res.json({message: "No situations for \"" + thing + "\" found"});
+		} else {
+			var result = [];
+			for (var i = 0; i < situations.length; i++) {
+				result.push(situations[i]);
+			}
+			res.statusCode = 200;
+			res.json(result);
+		}
+	});
+}
 
 var callbackArray = [];
 

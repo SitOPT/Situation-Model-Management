@@ -58,7 +58,32 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
   
-  
+  /situations/{thing}:
+    x-swagger-router-controller: situations
+    get:
+      tags:
+        - situation
+      summary: Get all situations for a thing
+      description: Get all situations for a specified thing.
+      operationId: situationsByThing
+      parameters:
+        - name: thing
+          in: path
+          description: name of the thing
+          required: true
+          type: string
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/SituationModel"
+        "404":
+          description: Thing not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
 
   /situations/{thing}/{situation}:
     x-swagger-router-controller: situations
