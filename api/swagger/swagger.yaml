@@ -3,8 +3,6 @@ swagger: "2.0"
 info:
   version: "1.0.2"
   title: SitOPT API Reference
-# during dev, should point to your local machine
-host: localhost:10010
 # basePath prefixes all resource paths 
 basePath: /
 # 
@@ -23,6 +21,96 @@ produces:
   - text/html
 
 paths:
+
+  /recognitions:
+    x-swagger-router-controller: recognitions
+    get:
+      tags:
+        - recognitions
+      summary: Gets all started recognitions
+      description: Gets all started recognitions for Node-Red
+      operationId: getRecognitions
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: array
+            items:
+              type: object
+              required:
+                - thing
+                - template
+                - timestamp
+                - id
+              properties:
+                thing:
+                  type: string
+                template:
+                  type: string
+                timestamp:
+                  type: number
+                id:
+                  type: string
+
+    post:
+      tags:
+        - recognitions
+      summary: Writes a new recognition
+      description: Inserts a new Recognition or ignores the request if one already exists
+      operationId: postRecognition
+
+      parameters:
+        - in: body
+          name: recognition
+          description: a recognition
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+              thing:
+                type: string
+              template:
+                type: string
+            required:
+              - id
+              - thing
+              - template
+
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/Response"
+
+  /recognitions/{id}:
+    x-swagger-router-controller: recognitions
+    delete:
+      tags:
+        - recognitions
+      summary: Stops the recognition
+      description: Stops the recognition for thing/template and deletes all actuators
+      operationId: deleteRecognition
+
+      parameters:
+        - in: path
+          name: id
+          description: id of the nodered flow
+          required: true
+          type: string
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/Response"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
 
   /situations/occured/{thing}/{situation}:
     x-swagger-router-controller: situations

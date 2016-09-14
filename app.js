@@ -14,6 +14,7 @@ var ObjectId = require('mongodb').ObjectID;
 var url = 'mongodb://localhost:27017/SitDB';
 
 global.name = "MongoConn";
+global.callbackArray = [];
 
 MongoClient.connect(url, function(err, database) {
   	assert.equal(null, err);

@@ -196,7 +196,9 @@ function getThingByName(req, res) {
     queryName(req.swagger.params.name.value, function(doc){
         if (doc.length > 0) {
             doc[0].location = JSON.stringify(doc[0].location);
-            doc[0].sensors = doc[0].sensor || [];
+            if (doc[0].sensors == undefined) {
+                doc[0].sensors = doc[0].sensor || [];
+            }
             delete doc[0].sensor;
             res.json(doc[0]);
         } else {

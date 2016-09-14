@@ -50,8 +50,6 @@ function situationsByThing(req, res) {
 	});
 }
 
-var callbackArray = [];
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //feed
 //
@@ -279,7 +277,7 @@ function situationChange(req, res){
 					}
 					if (!registrated){
 						console.log(doc[0].thing);
-						SaveURL(doc[0].thing, doc[0].situationtemplate, req.swagger.params.CallbackURL.value, req.swagger.params.once.value);
+						SaveURL(doc[0].thing, doc[0].template, req.swagger.params.CallbackURL.value, req.swagger.params.once.value);
 						res.statusCode = 200;
 						res.json({message: "Registration successful"});
 					}else{
@@ -382,7 +380,7 @@ function situationByThingAndTemplate(req, res){
 }
 function queryThingAndTemplate(thing, template, callback){
 	var array = [];
-	var cursor = db.collection('Situations').find( { "thing": thing, "situationtemplate": template } );
+	var cursor = db.collection('recognitions').find( { "thing": thing, "template": template } );
 	cursor.each(function(err, doc) {
 		assert.equal(err, null);
 		if (doc != null) {
