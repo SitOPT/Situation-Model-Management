@@ -85,18 +85,7 @@ Array.prototype.remove = function(from, to) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 function checkCallbacks(document){
 	var callbacks = [];
-	console.log(document);
 	for (var i=0; i<callbackArray.length;i++){
-
-		console.log("----------");
-		console.log("DOCUMENT");
-		console.log(callbackArray[i]);
-		console.log("----------");
-		console.log(callbackArray[i].ThingID);
-		console.log(document.thing);
-		console.log(callbackArray[i].TemplateID);
-		console.log(document.situationtemplate);
-		console.log("----------");
 		if ((callbackArray[i].ThingID == document.thing && callbackArray[i].TemplateID == document.situationtemplate)
 			|| callbackArray[i].ThingID == ""){
 			callbacks.push(i);
@@ -104,9 +93,6 @@ function checkCallbacks(document){
 	}
 	//console.log(callbacks.length);
 	for (var i=callbacks.length-1; i>=0;i--){
-		console.log("Test" + callbackArray[callbacks[i]].callbackURL);
-
-		var JSON = {doc: document};
 		httpSend({
 			url: callbackArray[callbacks[i]].callbackURL,
 			method: "POST",
@@ -116,7 +102,7 @@ function checkCallbacks(document){
 			if (!error && response.statusCode == 200){
 				console.log(body);
 			}
-		})
+		});
 
 		if (callbackArray[callbacks[i]].once){
 			callbackArray.remove([callbacks[i]]);
@@ -230,27 +216,30 @@ function situationChangeDelete(req, res){
 //Enables registration to situation changes specified by ThingID and TemplateID
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 function situationChange(req, res){
+	var template = req.swagger.params.body.value.SitTempName;
+	var thing = req.swagger.params.body.value.ThingName;
+	var callback = req.swagger.params.body.value.CallbackURL;
+	var once = req.swagger.params.body.value.once;
 
 	//XOR not allowerd
-	if (!(req.swagger.params.SitTempName.value==undefined)&&req.swagger.params.ThingName.value==undefined ||
-		req.swagger.params.SitTempName.value==undefined&&!(req.swagger.params.ThingName.value==undefined)){
+	if (!(template==undefined) && thing==undefined || template==undefined && !(thing==undefined)){
 		res.statusCode = 400;
 		res.json({message: "Specify both IDs or none."});
 		console.log("Case1");
 		//Registration for all situations
-	} else if (req.swagger.params.SitTempName.value==undefined&&req.swagger.params.ThingName.value==undefined){
+	} else if (template==undefined && thing==undefined){
 		console.log("Case2");
 
 
 		var registrated = false;
 		for (var i=callbackArray.length-1; i >=0; i--){
-			if (callbackArray[i].callbackURL == req.swagger.params.CallbackURL.value){
+			if (callbackArray[i].callbackURL == callback){
 				registrated = true;
 				callbackArray.remove(i);
 			}
 		}
 
-		SaveURL("", "", req.swagger.params.CallbackURL.value, req.swagger.params.once.value);
+		SaveURL("", "", callback, once);
 
 		if (!registrated){
 			res.statusCode = 200;
@@ -261,8 +250,8 @@ function situationChange(req, res){
 		}
 		//Registration for specified situation
 	}else{
-		queryThingAndTemplate(req.swagger.params.ThingName.value,
-			req.swagger.params.SitTempName.value, function(doc){
+		queryThingAndTemplate(thing,
+			template, function(doc){
 
 				if (doc[0] == null){
 					res.statusCode = 404;
@@ -270,14 +259,14 @@ function situationChange(req, res){
 				}else{
 					var registrated = false;
 					for (var i = 0; i < callbackArray.length; i++){
-						if ((callbackArray[i].callbackURL == req.swagger.params.CallbackURL.value && callbackArray[i].ThingName == doc[0].thing && callbackArray[i].TemplateID == doc[0].situationtemplate) ||
-							(callbackArray[i].callbackURL == req.swagger.params.CallbackURL.value && callbackArray[i].ThingName == "")){
+						if ((callbackArray[i].callbackURL == callback && callbackArray[i].ThingName == doc[0].thing && callbackArray[i].TemplateID == doc[0].situationtemplate) ||
+							(callbackArray[i].callbackURL == callback && callbackArray[i].ThingName == "")){
 							registrated = true;
 						}
 					}
 					if (!registrated){
 						console.log(doc[0].thing);
-						SaveURL(doc[0].thing, doc[0].template, req.swagger.params.CallbackURL.value, req.swagger.params.once.value);
+						SaveURL(doc[0].thing, doc[0].template, callback, once);
 						res.statusCode = 200;
 						res.json({message: "Registration successful"});
 					}else{
@@ -299,7 +288,14 @@ function situationChange(req, res){
 //Stores registration in array "callbackArray"
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 function SaveURL(thingID, templateID, url, continued){
+	console.log(callbackArray);
 	var tuple = {ThingID : thingID, TemplateID: templateID, callbackURL: url, once : continued};
+	for (var i = 0; i < callbackArray.length; i++) {
+		if (callbackArray[i].ThingID == thingID && callbackArray[i].TemplateID == templateID && callbackArray[i].callbackURL == url) {
+			callbackArray[i].once = continued;
+			return;
+		}
+	}
 	callbackArray.push(tuple);
 }
 

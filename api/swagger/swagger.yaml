@@ -281,30 +281,30 @@ paths:
       operationId: situationChange
       
       parameters:
-        - name: SitTempName
-          in: query
+        - name: body
+          in: body
           description: name of situation template. If empty, any situation change will be sent to the callback URL
           required: false
-          type: string
-          
-        - name: ThingName
-          in: query
-          description: name of thing. If empty, any situation change will be sent to the callback URL
-          required: false
-          type: string
-          
-        - name: CallbackURL
-          in: query
-          description: URL the callback is sent to
-          required: true
-          type: string
-          
-        - name: once
-          in: query
-          description: whether the callback continues or only once
-          required: true
-          type: boolean
-          default: false
+          schema:
+            type: object
+            properties:
+              SitTempName:
+                description: name of situation template. If empty, any situation change will be sent to the callback URL
+                type: string
+              ThingName:
+                description: name of thing. If empty, any situation change will be sent to the callback URL
+                type: string
+              CallbackURL:
+                description: URL the callback is sent to
+                type: string
+              once:
+                description: whether the callback continues or only once
+                type: boolean
+                default: false
+            required:
+              - SitTempName
+              - ThingName
+              - CallbackURL
 
       responses:
         "200":

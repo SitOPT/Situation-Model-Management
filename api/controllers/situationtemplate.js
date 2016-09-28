@@ -124,10 +124,15 @@ function getAttachment(req, res){
 };*/
 
 function attachFile(document, xml, callback){
+	var matches = xml.match(/<\s*[sS][iI][tT][uU][aA][tT][iI][oO][nN](\s[^>]*)?>/);
+	var nodeRed = matches == null || matches.length == 0;
+	var esper = !nodeRed && matches.length > 0;
 	db.collection('Situationtemplates').updateOne( 
    		{"_id" :  new require('mongodb').ObjectID(document._id) },
    		{
-   			$set: {"xml" : xml},
+   			$set: {"xml" : xml,
+			"nodeRed": nodeRed,
+			"esper": esper},
    			$currentDate: {"lastModified":true}
    		}, function(err, result){
    			assert.equal(err,null);
@@ -138,7 +143,6 @@ function attachFile(document, xml, callback){
 
 function uploadAttachment(req, res){
  // res.setHeader('Content-Type', 'application/json');
-	console.log(req.swagger.params.name.value);
 	
 
 	queryName(req.swagger.params.name.value, function(doc){
@@ -258,11 +262,17 @@ function saveTemplate(req, res){
 		assert.equal(error, null);
 		console.log("length: " + array.length)
 		if (array.length == 0) {
+			console.log(document)
+			var matches = document.xml.match(/<\s*[sS][iI][tT][uU][aA][tT][iI][oO][nN](\s[^>]*)?>/);
+			var nodeRed = matches == null || matches.length == 0;
+			var esper = !nodeRed && matches.length > 0;
 			db.collection('Situationtemplates').insertOne( {
 				"objecttype" : "Situationtemplate",
 				"name" : document.name,
 				"situation" : document.situation,
 				"xml" : document.xml,
+				"nodeRed" : nodeRed,
+				"esper" : esper,
 				"description" : document.description,
 				"timestamp" : (new Date).getTime()
 			}, function(err, result) {
