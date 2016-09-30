@@ -382,7 +382,15 @@ function queryThingAndTemplate(thing, template, callback){
 		if (doc != null) {
 			array.push(doc);
 		}else{
-			callback(array);
+			var c = db.collection('Situations').find({"thing": thing, "situationtemplate": template});
+                        c.each(function(e, d) {
+                            assert.equal(e, null);
+                            if (d != null) {
+                                array.push(d);
+                            } else {
+                                callback(array);
+                            }
+                       });
 		}
 	});
 }
